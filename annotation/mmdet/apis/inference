@@ -1,0 +1,20 @@
+主要是inference阶段的一些东西,这里是用的数据都是py配置文件的data.test的参数（test_cfg数据是模型参数，在model搭建时已经传入用于构建RPN等）
+
+inference_detector(model, imgs, cfg, device='cuda:0')
+    搭建检测器：
+        实例化图像变换类ImageTransform，传入两个参数：cfg.data.test.size_divisor和**cfg.img_norm_cfg（初始化类的一些配置）
+        模型设置eval放到gpu
+        根据输入的是图片list还是单张图片传入不同函数处理得到结果
+        
+_inference_generator(model, imgs, img_transform, cfg, device)   
+    迭代多张图片，返回生成器的形式
+    
+_inference_single(model, img, img_transform, cfg, device)
+    inference前向传播
+    
+    
+    
+    
+show_result(img, result, dataset='coco', score_thr=0.3, out_file=None)
+    这里绘制mask和detection结果，如果想存图也可以在最后输入out_file即可，或者自己该，多加个路径存一下
+    

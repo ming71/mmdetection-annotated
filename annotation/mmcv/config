@@ -1,0 +1,25 @@
+mmcv.Config.fromfile
+	封装方法：可以看到，配置的cfg方式一般不是直接实例化Config类，而是用其fromfile方法
+	       （用静态修饰器@staticmethod声明的，可以直接类调用不实例化），
+	        该函数返回的是Config类：Config(cfg_dict, filename=filename)；
+	        传入的参数cfg_dict是将配置文件(如mask_rcnn_r101_fpn_1x.py)用一个大字典进行封装，
+	        内嵌套小字典就是py文件的dict，最后是k-v，对应每个选项;filename就是py配置文件的路径名
+	元素调用方法：返回的类可以看作一个大字典，嵌套了py配置文件的元素，以字典形式逐级调用，如
+	            cfg.model，cfg.train_cfg;cfg.model.type,cfg.model.backbone.type等
+
+Config类
+    使用mmcv.Config.fromfile还是会返回Config类，最终离不开该类的相关属性。
+    __init__(self, cfg_dict=None, filename=None)
+        把cfg_dict封装成ConfigDict类，赋值给'_cfg_dict'
+    __getattr__(self, name)
+        如果属性中没有name，则动态添加到该key到_cfg_dict中去
+    __setattr__(self, name, value)
+        进行赋值时自动调用该方法完成赋值，可以看出也会先将value封装成ConfigDict，然后调用_cfg_dict的__setattr__完成value对name的赋值
+        
+    
+    
+    
+ConfigDict(Dict)类
+    __missing__(self, name)
+        当访问字典不存在的key时触发的行为：抛出错误指出不存在的key
+	

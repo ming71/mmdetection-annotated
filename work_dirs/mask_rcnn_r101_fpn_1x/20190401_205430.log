@@ -1,0 +1,2 @@
+2019-04-01 20:54:30,095 - INFO - Start running, host: xiaoming@xiaoming-OMEN-by-HP-Laptop-15-dc0xxx, work_dir: /py/mmdetection/work_dirs/mask_rcnn_r101_fpn_1x
+2019-04-01 20:54:30,095 - INFO - workflow: [('train', 1)], max: 12 epochs

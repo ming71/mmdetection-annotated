@@ -1,0 +1,7 @@
+
+
+load_checkpoint(model,filename,map_location=None,strict=False,logger=None)
+    功能：  从URL链接或者文件中加载模型，这里只关注文件加载
+    实现：  先用torch.load将pth文件加载到遍量checkpoint，
+            然后从中提取权值参数存为state_dict，（因为还有可能pth中存有模型后者优化器数据）
+            最后load_state_dict将数据加载

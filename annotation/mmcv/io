@@ -1,0 +1,48 @@
+
+读取图片：
+def imread(img_or_path, flag='color'):
+    """Read an image.
+
+    Args:
+        img_or_path (ndarray or str): Either a numpy array or image path.
+            If it is a numpy array (loaded image), then it will be returned
+            as is.
+        flag (str): Flags specifying the color type of a loaded image,
+            candidates are `color`, `grayscale` and `unchanged`.
+
+    Returns:
+        ndarray: Loaded image array.
+    """
+    if isinstance(img_or_path, np.ndarray):
+        return img_or_path
+    elif is_str(img_or_path):
+        flag = imread_flags[flag] if is_str(flag) else flag
+        check_file_exist(img_or_path,
+                         'img file does not exist: {}'.format(img_or_path))
+        return cv2.imread(img_or_path, flag)
+    else:
+        raise TypeError('"img" must be a numpy array or a filename')
+
+实际上就是个封装的cv2.imread，输入图片就好了，其他的功能没必要
+
+
+写图片
+def imwrite(img, file_path, params=None, auto_mkdir=True):
+    """Write image to file
+
+    Args:
+        img (ndarray): Image array to be written.
+        file_path (str): Image file path.
+        params (None or list): Same as opencv's :func:`imwrite` interface.
+        auto_mkdir (bool): If the parrent folder of `file_path` does not exist,
+            whether to create it automatically.
+
+    Returns:
+        bool: Successful or not.
+    """
+    if auto_mkdir:
+        dir_name = osp.abspath(osp.dirname(file_path))
+        mkdir_or_exist(dir_name)
+    return cv2.imwrite(file_path, img, params)
+    
+会自动检索目录是否存在，不存在则创建，cv2.imwrite写
