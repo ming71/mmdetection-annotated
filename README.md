@@ -49,5 +49,6 @@ If you want to inspect on intermediate variables , `hook.py` can be provided as 
 ## Annotations</br>
 Annotations are attached everywhere in the codes(surely only the part I have read , and the not finished part will be conpleted as soon as possible).Beside , `annotation` folder contains some interpreting documents as well.</br>
 * **Model visualization**
+<div align=center><img width="600" height="600" src="https://github.com/ming71/mmdetection-annotated/blob/master/annotation/model_vis/maskrcnn-model-inference.png"/></div>
 
 
