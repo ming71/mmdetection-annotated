@@ -43,19 +43,19 @@ if __name__ == '__main__':
 
 ```
 * **Debug**</br>
-You can debug on code by setting breakpoint with method of add `ipdb.set_trace()`
+You can debug by setting breakpoint with method of add `ipdb.set_trace()`
 * **Hook**</br>
-If you want to inspect on intermediate variables , `hook.py` can be provided as a reference for your work.
+If you want to inspect on intermediate variables , `hook.py` can be a provision serve as a reference for your work.
 ## Annotations
-Annotations are attached everywhere in the codes(surely only the part I have read , and the not finished part will be conpleted as soon as possible).Beside , `annotation` folder contains some interpreting documents as well.</br>
+Annotations are attached everywhere in the code(surely only the part I have read , and the not finished part will be completed as soon as possible). Beside , `annotation` folder contains some interpreting documents as well.</br>
 * **Model visualization**
-Take Mask-RCNN for example , the model can be visualized as follow:</br>(more details refere to [here](https://github.com/ming71/mmdetection-annotated/blob/master/annotation/model_vis/maskrcnn-model-inference.png))
+Take Mask-RCNN for example , the model can be visualized as follow:(more details refere to [model-structure-png](https://github.com/ming71/mmdetection-annotated/blob/master/annotation/model_vis/maskrcnn-model-inference.png))
 <div align=center><img src="https://github.com/ming71/mmdetection-annotated/blob/master/annotation/model_vis/inference.png"/></div>
 
 * **Configuration**</br>
 Explicit describtion on Mask RCNN for example , refer to [mask_rcnn_r101_fpn_1x.py](https://github.com/ming71/mmdetection-annotated/blob/master/annotation/mask_rcnn_r101_fpn_1x.py)</br>
 * **MMCV&MMDET**</br>
-Specification of mmcv lib and a partial mmdet.</br>
+Specification of mmcv lib and a partial mmdet(more details about various models will be update later ).</br>
 
 ## Detection Results</br>
 Test on Mask RCNN model:</br>
@@ -64,6 +64,6 @@ Test on Mask RCNN model:</br>
 <div align=center><img  src="https://github.com/ming71/mmdetection-annotated/blob/master/outputs/_screenshot_071019.png"/></div>
 
 ## Future work</br>
-It's a pity not to finish the training part , and continue work need to be done.Mmdetection performs better than many classical realization , it's really a excellent work , can be called as ‘Chinese Detectron’ ：p .I will update this project with annotations for training part , letting more people this good work.You can continue to foucus on this repo.</br>
+The training part is not finished yet , and continue work need to be done . Mmdetection performs better than many classical implementions , it's really a excellent work , can be called as ‘Chinese Detectron’ :p .I will update this project with annotations for training part , letting more people this good work.You can continue to foucus on this repo.</br>
 BTW , this repo is just used for better conprehension , if you ask for better presentation or latest implementions ,please keep eyes on [mmdetection](https://github.com/open-mmlab/mmdetection)</br>
 
