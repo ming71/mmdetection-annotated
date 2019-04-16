@@ -48,11 +48,11 @@ You can debug on code by setting breakpoint with method of add `ipdb.set_trace()
 If you want to inspect on intermediate variables , `hook.py` can be provided as a reference for your work.
 ## Annotations</br>
 Annotations are attached everywhere in the codes(surely only the part I have read , and the not finished part will be conpleted as soon as possible).Beside , `annotation` folder contains some interpreting documents as well.</br>
-* **Model visualization<br>**
-Take Mask-RCNN for example , the model can be visualized as follow:</br>(more details refere to [here](https://github.com/ming71/mmdetection-annotated/blob/master/annotation/model_vis/maskrcnn-model-inference.png))</br>
+* **Model visualization**
+Take Mask-RCNN for example , the model can be visualized as follow:</br>(more details refere to [here](https://github.com/ming71/mmdetection-annotated/blob/master/annotation/model_vis/maskrcnn-model-inference.png))
 <div align=center><img src="https://github.com/ming71/mmdetection-annotated/blob/master/annotation/model_vis/inference.png"/></div>
 * **Configuration**
-Explicit describtion on Mask RCNN for example , refer to [this file](https://github.com/ming71/mmdetection-annotated/blob/master/annotation/mask_rcnn_r101_fpn_1x.py)</br>
+Explicit describtion on Mask RCNN for example , refer to [this file](https://github.com/ming71/mmdetection-annotated/blob/master/annotation/mask_rcnn_r101_fpn_1x.py)
 * **MMCV&MMDET**
 Specification of mmcv lib and a partial mmdet.</br>
 
