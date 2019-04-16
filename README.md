@@ -62,7 +62,6 @@ Test on Mask RCNN model:</br>
 <div align=center><img  src="https://github.com/ming71/mmdetection-annotated/blob/master/outputs/_screenshot_071019.png"/></div>
 
 ## Future work</br>
-It's a pity not to finish the training part , and continue work need to be done.Mmdetection performs better than many classical realization , it's really a excellent work , can be called as ‘Chinese Detectron’ ：p .<br>
-I will update this project with annotations for training part , letting more people this good work.You can continue to foucus on this repo.</br>
+It's a pity not to finish the training part , and continue work need to be done.Mmdetection performs better than many classical realization , it's really a excellent work , can be called as ‘Chinese Detectron’ ：p .I will update this project with annotations for training part , letting more people this good work.You can continue to foucus on this repo.</br>
 BTW , this repo is just used for better conprehension , if you ask for better presentation or latest implementions ,please keep eyes on [mmdetection](https://github.com/open-mmlab/mmdetection)</br>
 
