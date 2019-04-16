@@ -50,7 +50,7 @@ If you want to inspect on intermediate variables , `hook.py` can be provided as 
 Annotations are attached everywhere in the codes(surely only the part I have read , and the not finished part will be conpleted as soon as possible).Beside , `annotation` folder contains some interpreting documents as well.</br>
 * **Model visualization**</br>
 Take Mask-RCNN for example , the model can be visualized as follow:</br>(more details refere to [here](https://github.com/ming71/mmdetection-annotated/blob/master/annotation/model_vis/maskrcnn-model-inference.png))</br>
-<div align=center><img width="600" height="600" src="https://github.com/ming71/mmdetection-annotated/blob/master/annotation/model_vis/inference.png"/></div>
+<div align=center><img src="https://github.com/ming71/mmdetection-annotated/blob/master/annotation/model_vis/inference.png"/></div>
 * **Configuration **</br>
 Explicit describtion on Mask RCNN for example , refer to [this file](https://github.com/ming71/mmdetection-annotated/blob/master/annotation/mask_rcnn_r101_fpn_1x.py)</br>
 * **MMCV&MMDET**</br>
@@ -60,3 +60,9 @@ Test on Mask RCNN model:</br>
 <div align=center><img src="https://github.com/ming71/mmdetection-annotated/blob/master/outputs/_s1019.png"/></div>
 <div align=center><img  src="https://github.com/ming71/mmdetection-annotated/blob/master/outputs/_screenshot_02.04.2019.png"/></div>
 <div align=center><img  src="https://github.com/ming71/mmdetection-annotated/blob/master/outputs/_screenshot_071019.png"/></div>
+
+## Future work</br>
+It's a pity not to finish the training part , and continue work need to be done.Mmdetection performs better than many classical realization , it's really a excellent work , can be called as ‘Chinese Detectron’ ：p .<br>
+I will update this project with annotations for training part , letting more people this good work.You can continue to foucus on this repo.</br>
+BTW , this repo is just used for better conprehension , if you ask for better presentation or latest implementions ,please keep eyes on [mmdetection](https://github.com/open-mmlab/mmdetection)</br>
+
