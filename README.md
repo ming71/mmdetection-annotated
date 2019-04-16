@@ -51,10 +51,11 @@ Annotations are attached everywhere in the codes(surely only the part I have rea
 * **Model visualization**</br>
 Take Mask-RCNN for example , the model can be visualized as follow:</br>(more details refere to [here](https://github.com/ming71/mmdetection-annotated/blob/master/annotation/model_vis/maskrcnn-model-inference.png))</br>
 <div align=center><img src="https://github.com/ming71/mmdetection-annotated/blob/master/annotation/model_vis/inference.png"/></div>
-* **Configuration **</br>
+* **Configuration**</br>
 Explicit describtion on Mask RCNN for example , refer to [this file](https://github.com/ming71/mmdetection-annotated/blob/master/annotation/mask_rcnn_r101_fpn_1x.py)</br>
 * **MMCV&MMDET**</br>
 Specification of mmcv lib and a partial mmdet.</br>
+
 ## Detection Results</br>
 Test on Mask RCNN model:</br>
 <div align=center><img src="https://github.com/ming71/mmdetection-annotated/blob/master/outputs/_s1019.png"/></div>
