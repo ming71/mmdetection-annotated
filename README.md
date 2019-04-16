@@ -57,6 +57,6 @@ Explicit describtion on Mask RCNN for example , refer to [this file](https://git
 Specification of mmcv lib and a partial mmdet.</br>
 ## Detection Results</br>
 Test on Mask RCNN model:</br>
-<div align=center><img width="600" height="600" src="https://github.com/ming71/mmdetection-annotated/blob/master/outputs/_s1019.png"/></div>
-<div align=center><img width="600" height="600" src="https://github.com/ming71/mmdetection-annotated/blob/master/outputs/_screenshot_02.04.2019.png"/></div>
-<div align=center><img width="600" height="600" src="https://github.com/ming71/mmdetection-annotated/blob/master/outputs/_screenshot_071019.png"/></div>
+<div align=center><img src="https://github.com/ming71/mmdetection-annotated/blob/master/outputs/_s1019.png"/></div>
+<div align=center><img  src="https://github.com/ming71/mmdetection-annotated/blob/master/outputs/_screenshot_02.04.2019.png"/></div>
+<div align=center><img  src="https://github.com/ming71/mmdetection-annotated/blob/master/outputs/_screenshot_071019.png"/></div>
