@@ -2,7 +2,7 @@
 Note on mmdetection for better usage and understanding.</br>
 ## Introduction
 Refer to the execllent implemention here:https://github.com/open-mmlab/mmdetection ,and thanks to author [Kai Chen](https://github.com/hellock).</br>
-Open-mmlab project , which contains various models and implementions of latest papers , achieves great result in detection/segmentataion tasks , and is kind enough for rookies in CV field.</br>
+Open-mmlab project , which contains various models and implementions of latest papers , achieves great results in detection/segmentataion tasks , and is kind enough for rookies in CV field.</br>
 ## Getting started
 More information about installation or pre-train model downloads , pls refer to [officia mmdetection](https://github.com/open-mmlab/mmdetection) or [CSDN blog here](https://blog.csdn.net/mingqi1996/article/details/88091802)</br>
 * **Test on images</br>**
@@ -45,17 +45,17 @@ if __name__ == '__main__':
 * **Debug**</br>
 You can debug by setting breakpoint with method of add `ipdb.set_trace()`
 * **Hook**</br>
-If you want to inspect on intermediate variables , `hook.py` can be a provision serve as a reference for your work.
+If you want to inspect on intermediate variables , `hook.py` can be a provision served as a reference for your work.
 ## Annotations
 Annotations are attached everywhere in the code(surely only the part I have read , and the not finished part will be completed as soon as possible). Beside , `annotation` folder contains some interpreting documents as well.</br>
-* **Model visualization**
+* **Model visualization**</br>
 Take Mask-RCNN for example , the model can be visualized as follow:(more details refere to [model-structure-png](https://github.com/ming71/mmdetection-annotated/blob/master/annotation/model_vis/maskrcnn-model-inference.png))
 <div align=center><img src="https://github.com/ming71/mmdetection-annotated/blob/master/annotation/model_vis/inference.png"/></div>
 
 * **Configuration**</br>
-Explicit describtion on Mask RCNN for example , refer to [mask_rcnn_r101_fpn_1x.py](https://github.com/ming71/mmdetection-annotated/blob/master/annotation/mask_rcnn_r101_fpn_1x.py)</br>
+Explicit describtion on config file , take Mask RCNN for example , refer to [mask_rcnn_r101_fpn_1x.py](https://github.com/ming71/mmdetection-annotated/blob/master/annotation/mask_rcnn_r101_fpn_1x.py)</br>
 * **MMCV&MMDET**</br>
-Specification of mmcv lib and a partial mmdet(more details about various models will be update later ).</br>
+Specification of mmcv lib and a partial of mmdet(more details about various models will be update later ).</br>
 
 ## Detection Results</br>
 Test on Mask RCNN model:</br>
@@ -64,6 +64,6 @@ Test on Mask RCNN model:</br>
 <div align=center><img  src="https://github.com/ming71/mmdetection-annotated/blob/master/outputs/_screenshot_071019.png"/></div>
 
 ## Future work</br>
-The training part is not finished yet , and continue work need to be done . Mmdetection performs better than many classical implementions , it's really a excellent work , can be called as ‘Chinese Detectron’ :p .I will update this project with annotations for training part , letting more people this good work.You can continue to foucus on this repo.</br>
-BTW , this repo is just used for better comprehension , if you ask for better presentation or latest implementions ,please keep eyes on [mmdetection](https://github.com/open-mmlab/mmdetection)</br>
+The training part is not finished yet , and continue work need to be done . Mmdetection performs better than many classical implementions , it's really a excellent work , can be called as ‘Chinese Detectron’ :p .I will update this project with annotations for training part , letting more people make a good use of this great work.You can continue to foucus on this repo.</br>
+BTW , this repo is just used for better comprehension , if you ask for better performance or latest paper implementions ,please keep eyes on [mmdetection](https://github.com/open-mmlab/mmdetection)</br>
 
