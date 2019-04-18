@@ -55,7 +55,7 @@ Take Mask-RCNN for example , the model can be visualized as follow:(more details
 * **Configuration**</br>
 Explicit describtion on config file , take Mask RCNN for example , refer to [mask_rcnn_r101_fpn_1x.py](https://github.com/ming71/mmdetection-annotated/blob/master/annotation/mask_rcnn_r101_fpn_1x.py)</br>
 * **MMCV&MMDET**</br>
-Specification of mmcv lib and a partial of mmdet(more details about various models will be update later ).</br>
+Specification of mmcv lib and a partial of mmdet(more details about various models will be updated later ).</br>
 
 ## Detection Results</br>
 Test on Mask RCNN model:</br>
