@@ -63,6 +63,13 @@ Test on Mask RCNN model:</br>
 <div align=center><img  src="https://github.com/ming71/mmdetection-annotated/blob/master/outputs/_screenshot_02.04.2019.png"/></div>
 <div align=center><img  src="https://github.com/ming71/mmdetection-annotated/blob/master/outputs/_screenshot_071019.png"/></div>
 
+
+## Training</br>
+* **dataset**<br>
+You can just use COCO dataset ,refer [here](https://blog.csdn.net/mingqi1996/article/details/88091802)<br>
+If you want to train on your customed dataset labeled by `labelme` ,you need first convert json files to COCO style , this [toolbox](https://github.com/ming71/toolbox) may help you .<br>
+
+
 ## Future work</br>
 The training part is not finished yet , and continue work need to be done . Mmdetection performs better than many classical implementions , it's really a excellent work , can be called as ‘Chinese Detectron’ :p .I will update this project with annotations for training part , letting more people make a good use of this great work.You can continue to foucus on this repo.</br>
 BTW , this repo is just used for better comprehension , if you ask for better performance or latest paper implementions ,please keep eyes on [mmdetection](https://github.com/open-mmlab/mmdetection)</br>
