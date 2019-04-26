@@ -4,7 +4,7 @@ Note on mmdetection for better usage and understanding.</br>
 Refer to the execllent implemention here:https://github.com/open-mmlab/mmdetection ,and thanks to author [Kai Chen](https://github.com/hellock).</br>
 Open-mmlab project , which contains various models and implementions of latest papers , achieves great results in detection/segmentataion tasks , and is kind enough for rookies in CV field.</br>
 ## Getting started
-More information about installation or pre-train model downloads , pls refer to [officia mmdetection](https://github.com/open-mmlab/mmdetection) or [CSDN blog here](https://blog.csdn.net/mingqi1996/article/details/88091802)</br>
+More information about installation or pre-train model downloads , pls refer to [officia mmdetection](https://github.com/open-mmlab/mmdetection) or [blog here](https://blog.csdn.net/mingqi1996/article/details/88091802)</br>
 * **Test on images</br>**
 You can test on Mask-RCNN demo by running the script `demo.py`.
 I have just rewritten the demo file to detect on single image or a folder as follow:
