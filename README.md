@@ -43,7 +43,7 @@ if __name__ == '__main__':
 
 ```
 * **Debug**</br>
-You can debug by setting breakpoint with method of add `ipdb.set_trace()`
+You can debug by setting breakpoint with method of adding `ipdb.set_trace()`
 * **Hook**</br>
 If you want to inspect on intermediate variables , `hook.py` can be a provision served as a reference for your work.
 ## Annotations
