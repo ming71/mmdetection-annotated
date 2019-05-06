@@ -1,5 +1,6 @@
 # mmdetection-annotated
 Note on mmdetection for better usage and understanding.</br>
+update: Focused on some experiments recently , I may postpone updates on training parts.To be contunued....</br>
 ## Introduction
 Refer to the execllent implemention here:https://github.com/open-mmlab/mmdetection ,and thanks to author [Kai Chen](https://github.com/hellock).</br>
 Open-mmlab project , which contains various models and implementions of latest papers , achieves great results in detection/segmentataion tasks , and is kind enough for rookies in CV field.</br>
