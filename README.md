@@ -72,6 +72,8 @@ Test on Mask RCNN model:</br>
 - If you want to train on your customed dataset labeled by `labelImg` , you need first convert xml files to COCO style , this [toolbox](https://github.com/ming71/toolbox) may also help you .<br>
 - I have tested on these tools recently to make sure them still work well, if questiones still arised , desrcibe on issue please or contact me , thanks.<br>
 
+### lr
+Remember to set lr in config file according to your <u>**own GPU_NUM**</u> !!!!(eg.1/8 of default lr for 1 GPU)
 
 ## Future work</br>
 The training part is not finished yet , and continue work need to be done . Mmdetection performs better than many classical implementions , it's really a excellent work , can be called as ‘Chinese Detectron’ :p .I will update this project with annotations for training part , letting more people make a good use of this great work.You can continue to foucus on this repo.</br>
