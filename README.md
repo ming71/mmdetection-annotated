@@ -1,6 +1,6 @@
 # mmdetection-annotated
 Note on mmdetection for better usage and understanding.</br>
-**Notice** : Focused on some experiments recently , I may postpone updates on training parts.To be contunued....</br>
+**Notice** : Focused on some experiments recently , I may postpone updates on training parts.To be contunued....(well,I promise to finish the rest work before **Jul**.Blame it on examinations...)</br>
 ## Introduction
 Refer to the execllent implemention here:https://github.com/open-mmlab/mmdetection ,and thanks to author [Kai Chen](https://github.com/hellock).</br>
 Open-mmlab project , which contains various models and implementions of latest papers , achieves great results in detection/segmentataion tasks , and is kind enough for rookies in CV field.</br>
@@ -72,7 +72,7 @@ Test on Mask RCNN model:</br>
 - If you want to train on your customed dataset labeled by `labelImg` , you need first convert xml files to COCO style , this [toolbox](https://github.com/ming71/toolbox) may also help you .<br>
 - I have tested on these tools recently to make sure them still work well, if questiones still arised , desrcibe on issue please or contact me , thanks.<br>
 
-### lr
+### learning rate
 Remember to set lr in config file according to your <u>**own GPU_NUM**</u> !!!!(eg.1/8 of default lr for 1 GPU)
 
 ## Future work</br>
