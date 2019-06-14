@@ -1,0 +1,8 @@
+
+
+def obj_from_dict(info, parent=None, default_args=None)
+	info:   cfg的配置信息
+	parent：父类信息，如<module 'mmdet.datasets' from '/py/mmdetection-master/mmdet/datasets/__init__.py'>
+
+	作用：利用配置字典信息进行数据类的初始化（可选类型，在py文件设置），选项有custom/voc/coco等，见__init__.py
+	实现：info也就是py配置文件中会有一个type，一般是'CocoDataset'，那么会据此在parent中搜寻得到对应的类赋给obj_type，也就是<class 'mmdet.datasets.coco.CocoDataset'>，最后用info其他信息作为初始量传入该类中进行初始化
