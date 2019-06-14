@@ -1,7 +1,8 @@
 # model settings
 model = dict(                       # 模型build参数
     type='MaskRCNN',
-    pretrained='modelzoo://resnet101',
+    pretrained='modelzoo://resnet101',  # 注意这个地方： inference时，需要覆盖为None，
+                                        #              training 时，如果对网络有更改，这个模型是用不了的，也要写None重新自己训练
     backbone=dict(
         type='ResNet',
         depth=101,
@@ -105,12 +106,12 @@ dataset_type = 'CocoDataset'
 data_root = 'data/coco/'
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
-    # data部分设置的就是输入图片进行处理的相关参数
+    # data部分设置的就是输入图片进行处理的相关参数,在训练/测试之前先加载
 data = dict(
     imgs_per_gpu=2,
     workers_per_gpu=2,
     train=dict(
-        type=dataset_type,
+        type=dataset_type,      # 'CocoDataset'
         ann_file=data_root + 'annotations/instances_train2017.json',
         img_prefix=data_root + 'train2017/',
         img_scale=(1333, 800),
@@ -152,7 +153,7 @@ lr_config = dict(
     warmup_iters=500,
     warmup_ratio=1.0 / 3,
     step=[8, 11])
-checkpoint_config = dict(interval=1)
+checkpoint_config = dict(interval=1)                # 设置断点
 # yapf:disable
 log_config = dict(
     interval=50,
@@ -165,7 +166,7 @@ log_config = dict(
 total_epochs = 12
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/mask_rcnn_r101_fpn_1x'
+work_dir = './work_dirs/mask_rcnn_r101_fpn_1x'      # 训练过程的工作目录，再次存储权重等文件
 load_from = None
 resume_from = None
-workflow = [('train', 1)]
+workflow = [('train', 1)]       # 工作流程，代表train一轮。更详细的解释见runner注释，这里就不展开，一般只用这个就行
