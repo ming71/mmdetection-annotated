@@ -24,24 +24,7 @@
         实际添加字典的实现。
         传入的class必须是继承自nn.Module的自定义类，添加到_module_dict
         添加元素k-v对为 ‘class_name’:Class
-        
 
-注册调用：
-	通过import进行预执行注册模块，先搭建五个大类的注册，然后在各个大类下的_module_dict属性中添加不同的具体模块
-	注意：这里提前注册甚至搭建的模块本质都是占位符，在传入cfg的真正参数之前都是不连接的
-	举例：
-	    如demo的from mmdet.models import build_detector，查看models package的__init__.py下__all__参数，
-	    发现了上述五个大类，首先会完成对其注册；
-	    同时也会调用其中的方法，如还有一行from .backbones import *，进入其下的__init__发现其导入了'ResNet', 'ResNeXt', 'SSDVGG'三个
-	    backbone，进入函数查看，发现这三个class使用@BACKBONES.register_module修饰器修饰过
-	    同理，在程序执行前，DETECTORS的MaskRCNN，FasterRCNN等也已经导入部署好了，使用@DETECTORS.register_module修饰过，
-	    被添加到DETECTORS的_module_dict中了
-	    
-理解Registry的作用：
-    Registry的模块有五个，每个下的_module_dict字典会添加存放其中的不同类，但是这些类只是通过装饰器添加到字典的，类实际上是空的
-    作用是用于索引和搭建；
-        import阶段完成所有模块注册和字典的添加，类被添加到_module_dict了，但是没有计算能力；  -------> registry的工作
-        build时可以根据type名字索引对应各自Registry的_module_dict中的类，并且传入cfg参数进行真正的计算图构建-------> build的工作
     
     
     
