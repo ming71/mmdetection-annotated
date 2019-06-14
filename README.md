@@ -78,6 +78,6 @@ Test on Mask RCNN model:</br>
 Remember to set lr in config file according to your <u>**own GPU_NUM**</u> !!!!(eg.1/8 of default lr for 1 GPU)
 
 ## Future work</br>
-The training part is not finished yet , and continue work need to be done . Mmdetection performs better than many classical implementions , it's really a excellent work , can be called as ‘Chinese Detectron’ :p .I will update this project with annotations for training part , letting more people make a good use of this great work.You can continue to foucus on this repo.</br>
+Mmdetection performs better than many classical implementions , it's really a excellent work , can be called as ‘Chinese Detectron’ :p .I will update this project with annotations for more details in the future, letting more people make a good use of this great work.You can continue to foucus on this repo.</br>
 BTW , this repo is just used for better comprehension , if you ask for better performance or latest paper implementions ,please keep eyes on [mmdetection](https://github.com/open-mmlab/mmdetection)</br>
 
