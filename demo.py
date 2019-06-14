@@ -1,8 +1,5 @@
 import ipdb
-import mmcv
-import torch
-import sys
-import os
+import sys,os,torch,mmcv
 from mmcv.runner import load_checkpoint
 #下面这句import的时候定位并调用Registry执行了五个模块的注册，详见running解释
 from mmdet.models import build_detector	
@@ -16,16 +13,17 @@ if __name__ == '__main__':
 	#inference只传入cfg的model和test配置，其他的都是训练参数
 	model = build_detector(cfg.model, test_cfg=cfg.test_cfg)
 	_ = load_checkpoint(model, 'weights/mask_rcnn_r101_fpn_1x_20181129-34ad1961.pth')
-	# _ = load_checkpoint(model, 'weights/faster_rcnn_r50_fpn_1x_20181010-3d1b3351.pth')
+	# _ = load_checkpoint(model, 'weights/latest.pth')
 
 	# print(model)
 
 	# test a single image
 	img= mmcv.imread('/py/pic/2.jpg')
+	# img= mmcv.imread('/py/mmdetection-master/data/coco/train2014/21.jpg')
 	result = inference_detector(model, img, cfg)
 	show_result(img, result)
 
-	# # test a list of folder
+	# # # test a list of folder
 	# path='/py/mmdetection/images/'
 	# imgs= os.listdir(path)
 	# # ipdb.set_trace()
