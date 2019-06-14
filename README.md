@@ -1,8 +1,8 @@
 # Notes!!
 There are certain **difference** between present version and offical openlab-mmdetection , such as `demo.py` file ,  cfg attribute is integrated to model in the latest version ,so that only 2 passing parameters are necessary compared to the former 3.<br>
-I don't think it worth tracing on codebase's updating , present version is sufficient . Thus I won't keep on attaching notes to newer mmdetection codebase.If you insist that the newer ,the better ,this repo also helps as I have check the difference between two repo ,only to find that no big changes are made .  
+<u>I don't think it worth tracing on codebase's updating , present version is sufficient </u>. Thus I won't keep on attaching notes to newer mmdetection codebase.If you insist that the newer ,the better ,this repo also helps as I have checked the difference between two repo ,only to find that **no big changes are made in recent codebase** .  
 # mmdetection-annotated 
-**Notice** : I'm back again , and concentrate on it now.~~Focused on some experiments recently , I may postpone updates on training parts.To be contunued....(well,I promise to finish the rest work before **Jul**.Blame it on examinations...)~~</br>
+**Notice** : Work finished! ~~I'm back again , and concentrate on it now.Focused on some experiments recently , I may postpone updates on training parts.To be contunued....(well,I promise to finish the rest work before **Jul**.Blame it on examinations...)~~</br>
 ## Introduction
 Refer to the execllent implemention here:https://github.com/open-mmlab/mmdetection ,and thanks to author [Kai Chen](https://github.com/hellock).</br>
 Open-mmlab project , which contains various models and implementions of latest papers , achieves great results in detection/segmentataion tasks , and is kind enough for rookies in CV field.</br>
