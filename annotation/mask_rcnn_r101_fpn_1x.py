@@ -159,7 +159,7 @@ log_config = dict(
     interval=50,
     hooks=[
         dict(type='TextLoggerHook'),
-        # dict(type='TensorboardLoggerHook')
+        # dict(type='TensorboardLoggerHook')    # 选择中间日志的输出形式，text是终端显示。推荐Tensorboard可以更好地可视化训练过程
     ])
 # yapf:enable
 # runtime settings
