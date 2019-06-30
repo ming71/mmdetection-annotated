@@ -1,3 +1,4 @@
+# 仅用作简单的中间变量输出和调用hook，实际上mmdetection集成了较完备的hook系统，如果进一步读懂底层代码无需这样自己写hook直接调用就行
 import mmcv
 import torch
 from mmcv.runner import load_checkpoint
