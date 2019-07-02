@@ -1,7 +1,7 @@
 import os
 import subprocess
 import time
-from setuptools import find_packages, setup
+from setuptools import find_packages, setup     # setuptools是一个安装发布的包，提共相关发布函数
 
 
 def readme():
@@ -105,8 +105,9 @@ if __name__ == '__main__':
         license='GPLv3',
         setup_requires=['pytest-runner'],
         tests_require=['pytest'],
+        # 需要的安装依赖项
         install_requires=[
-            'mmcv', 'numpy', 'matplotlib', 'six', 'terminaltables',
+            'mmcv', 'numpy', 'matplotlib', 'six', 'terminaltables', 
             'pycocotools'
         ],
         zip_safe=False)
