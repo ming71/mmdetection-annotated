@@ -1,4 +1,4 @@
-import ipdb
+import ipdb	 # ipdb是debug用的，如果不用可以注销掉
 import sys,os,torch,mmcv
 from mmcv.runner import load_checkpoint
 #下面这句import的时候定位并调用Registry执行了五个模块的注册，详见running解释
