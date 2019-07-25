@@ -50,6 +50,9 @@ You can debug by setting breakpoint with method of adding `ipdb.set_trace()`.Bef
 If you want to inspect on intermediate variables , `hook.py` can be a provision served as a reference for your work.
 ## Annotations
 Annotations are attached everywhere in the code(surely only the part I have read , and the not finished part will be completed as soon as possible). Beside , `annotation` folder contains some interpreting documents as well.</br>
+* **dataset_example**
+Provide a simple small sample data set for testing (segmentation && detection) .
+
 * **Model visualization**</br>
 Take Mask-RCNN for example , the model can be visualized as follow:(more details refere to [model-structure-png](https://github.com/ming71/mmdetection-annotated/blob/master/annotation/model_vis/maskrcnn-model-inference.png))
 <div align=center><img src="https://github.com/ming71/mmdetection-annotated/blob/master/annotation/model_vis/inference.png"/></div>
