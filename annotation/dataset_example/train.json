@@ -1,0 +1,37 @@
+{
+    "images": [
+        {
+            "height": 682,
+            "width": 500,
+            "id": 1,
+            "file_name": "21.jpg"
+        }
+    ],
+    "categories": [
+        {
+            "supercategory": "car",
+            "id": 1,
+            "name": "car"
+        }
+    ],
+    "annotations": [
+        {
+            "segmentation": [
+                [
+                    0.0
+                ]
+            ],
+            "iscrowd": 0,
+            "image_id": 1,
+            "area": 31164,
+            "bbox": [
+                136,
+                347,
+                196,
+                159
+            ],
+            "category_id": 1,
+            "id": 1
+        }
+    ]
+}

@@ -1,0 +1,26 @@
+<annotation>
+	<folder>image</folder>
+	<filename>21.jpg</filename>
+	<path>/py/mmdetection-master/data/coco/train2014/image/21.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>500</width>
+		<height>682</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>car</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>136</xmin>
+			<ymin>347</ymin>
+			<xmax>332</xmax>
+			<ymax>506</ymax>
+		</bndbox>
+	</object>
+</annotation>
