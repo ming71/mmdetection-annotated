@@ -113,9 +113,6 @@ def bbox2roi(bbox_list):
     Returns:
         Tensor: shape (n, 5), [batch_ind, x1, y1, x2, y2]
     """
-    # 功能：将一个bs的所有box通道融合，为了进行区分box来自bs的哪张图片，额外引入一维id标识图片index
-    # 注意：1.bbox_list第0个维度是img_id，也就是bs（图片的张数）
-    #      2.输入如果最后一维为xywh则直接加上一维index；如果为xywhc则将c替换为index
     rois_list = []
     for img_id, bboxes in enumerate(bbox_list):
         if bboxes.size(0) > 0:
@@ -157,3 +154,27 @@ def bbox2result(bboxes, labels, num_classes):
         bboxes = bboxes.cpu().numpy()
         labels = labels.cpu().numpy()
         return [bboxes[labels == i, :] for i in range(num_classes - 1)]
+
+
+def distance2bbox(points, distance, max_shape=None):
+    """Decode distance prediction to bounding box.
+
+    Args:
+        points (Tensor): Shape (n, 2), [x, y].
+        distance (Tensor): Distance from the given point to 4
+            boundaries (left, top, right, bottom).
+        max_shape (tuple): Shape of the image.
+
+    Returns:
+        Tensor: Decoded bboxes.
+    """
+    x1 = points[:, 0] - distance[:, 0]
+    y1 = points[:, 1] - distance[:, 1]
+    x2 = points[:, 0] + distance[:, 2]
+    y2 = points[:, 1] + distance[:, 3]
+    if max_shape is not None:
+        x1 = x1.clamp(min=0, max=max_shape[1] - 1)
+        y1 = y1.clamp(min=0, max=max_shape[0] - 1)
+        x2 = x2.clamp(min=0, max=max_shape[1] - 1)
+        y2 = y2.clamp(min=0, max=max_shape[0] - 1)
+    return torch.stack([x1, y1, x2, y2], -1)

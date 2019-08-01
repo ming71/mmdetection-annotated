@@ -4,13 +4,15 @@ import pycocotools.mask as mask_util
 import torch
 import torch.nn as nn
 
+from ..builder import build_loss
 from ..registry import HEADS
 from ..utils import ConvModule
-from mmdet.core import mask_cross_entropy, mask_target
+from mmdet.core import mask_target, force_fp32, auto_fp16
 
-import ipdb 
+
 @HEADS.register_module
 class FCNMaskHead(nn.Module):
+
     def __init__(self,
                  num_convs=4,
                  roi_feat_size=14,
@@ -21,10 +23,11 @@ class FCNMaskHead(nn.Module):
                  upsample_ratio=2,
                  num_classes=81,
                  class_agnostic=False,
-                 normalize=None):
+                 conv_cfg=None,
+                 norm_cfg=None,
+                 loss_mask=dict(
+                     type='CrossEntropyLoss', use_mask=True, loss_weight=1.0)):
         super(FCNMaskHead, self).__init__()
-        # ipdb.set_trace()    
-        # 提供三种上采样方法：转置卷积/最近邻插值/双线性插值
         if upsample_method not in [None, 'deconv', 'nearest', 'bilinear']:
             raise ValueError(
                 'Invalid upsample method {}, accepted methods '
@@ -38,39 +41,43 @@ class FCNMaskHead(nn.Module):
         self.upsample_ratio = upsample_ratio
         self.num_classes = num_classes
         self.class_agnostic = class_agnostic
-        self.normalize = normalize
-        self.with_bias = normalize is None
+        self.conv_cfg = conv_cfg
+        self.norm_cfg = norm_cfg
+        self.fp16_enabled = False
+        self.loss_mask = build_loss(loss_mask)
 
         self.convs = nn.ModuleList()
-        # Mask RCNN用4组3*3卷积对detection经过RoiAlign后的结果重组特征
         for i in range(self.num_convs):
-            in_channels = (self.in_channels
-                           if i == 0 else self.conv_out_channels)
+            in_channels = (
+                self.in_channels if i == 0 else self.conv_out_channels)
             padding = (self.conv_kernel_size - 1) // 2
             self.convs.append(
-                ConvModule(         #   基本的卷积模块：conv + norm + activation
+                ConvModule(
                     in_channels,
                     self.conv_out_channels,
                     self.conv_kernel_size,
                     padding=padding,
-                    normalize=normalize,
-                    bias=self.with_bias))
-        if self.upsample_method is None:    
+                    conv_cfg=conv_cfg,
+                    norm_cfg=norm_cfg))
+        upsample_in_channels = (
+            self.conv_out_channels if self.num_convs > 0 else in_channels)
+        if self.upsample_method is None:
             self.upsample = None
         elif self.upsample_method == 'deconv':
-            self.upsample = nn.ConvTranspose2d(     # 加入转置卷积层上采样
-                self.conv_out_channels,
+            self.upsample = nn.ConvTranspose2d(
+                upsample_in_channels,
                 self.conv_out_channels,
                 self.upsample_ratio,
                 stride=self.upsample_ratio)
         else:
-            self.upsample = nn.Upsample(            # 最近邻/双线性插值上采样 
+            self.upsample = nn.Upsample(
                 scale_factor=self.upsample_ratio, mode=self.upsample_method)
 
-        # 不分物体的mask只输出一个通道，如iou-net和mask-scoring rcnn
-        # 进行区分产生mask时，按照所有的cls_num各产生一个mask
         out_channels = 1 if self.class_agnostic else self.num_classes
-        self.conv_logits = nn.Conv2d(self.conv_out_channels, out_channels, 1)
+        logits_in_channel = (
+            self.conv_out_channels
+            if self.upsample_method == 'deconv' else upsample_in_channels)
+        self.conv_logits = nn.Conv2d(logits_in_channel, out_channels, 1)
         self.relu = nn.ReLU(inplace=True)
         self.debug_imgs = None
 
@@ -82,6 +89,7 @@ class FCNMaskHead(nn.Module):
                 m.weight, mode='fan_out', nonlinearity='relu')
             nn.init.constant_(m.bias, 0)
 
+    @auto_fp16()
     def forward(self, x):
         for conv in self.convs:
             x = conv(x)
@@ -101,21 +109,19 @@ class FCNMaskHead(nn.Module):
                                    gt_masks, rcnn_train_cfg)
         return mask_targets
 
+    @force_fp32(apply_to=('mask_pred', ))
     def loss(self, mask_pred, mask_targets, labels):
         loss = dict()
         if self.class_agnostic:
-            loss_mask = mask_cross_entropy(mask_pred, mask_targets,
-                                           torch.zeros_like(labels))
+            loss_mask = self.loss_mask(mask_pred, mask_targets,
+                                       torch.zeros_like(labels))
         else:
-            loss_mask = mask_cross_entropy(mask_pred, mask_targets, labels)
+            loss_mask = self.loss_mask(mask_pred, mask_targets, labels)
         loss['loss_mask'] = loss_mask
         return loss
 
-    # rcnn_test_cfg是配置文件设置的超参数信息
     def get_seg_masks(self, mask_pred, det_bboxes, det_labels, rcnn_test_cfg,
                       ori_shape, scale_factor, rescale):
-
-        ipdb.set_trace()
         """Get segmentation masks from mask_pred and bboxes.
 
         Args:
@@ -135,8 +141,11 @@ class FCNMaskHead(nn.Module):
         if isinstance(mask_pred, torch.Tensor):
             mask_pred = mask_pred.sigmoid().cpu().numpy()
         assert isinstance(mask_pred, np.ndarray)
+        # when enabling mixed precision training, mask_pred may be float16
+        # numpy array
+        mask_pred = mask_pred.astype(np.float32)
 
-        cls_segms = [[] for _ in range(self.num_classes - 1)] # mask不预测背景，coco为例此处80
+        cls_segms = [[] for _ in range(self.num_classes - 1)]
         bboxes = det_bboxes.cpu().numpy()[:, :4]
         labels = det_labels.cpu().numpy() + 1
 
@@ -147,27 +156,22 @@ class FCNMaskHead(nn.Module):
             img_w = np.round(ori_shape[1] * scale_factor).astype(np.int32)
             scale_factor = 1.0
 
-        # 遍历检测出的每个物体
         for i in range(bboxes.shape[0]):
             bbox = (bboxes[i, :] / scale_factor).astype(np.int32)
-            label = labels[i]   # 可以看出，虽然最终生成80类mask，但是是根据检测的label选mask的，也就是检测阶段的分类得分选择mask，不准确
+            label = labels[i]
             w = max(bbox[2] - bbox[0] + 1, 1)
             h = max(bbox[3] - bbox[1] + 1, 1)
 
-            if not self.class_agnostic:     
-                # 为每类都预测mask,取出当前类别的28*28mask，进行进一步处理
+            if not self.class_agnostic:
                 mask_pred_ = mask_pred[i, label, :, :]
             else:
-                # 提供了mask只预测前景背景的接口
                 mask_pred_ = mask_pred[i, 0, :, :]
-
-            # 创建一个原图尺寸大小的矩阵
             im_mask = np.zeros((img_h, img_w), dtype=np.uint8)
-            # 将28*28的特征图进行插值到bbox大小，然后根据阈值进行mask的二值化
-            bbox_mask = mmcv.imresize(mask_pred_, (w, h))   # 将预测的gt box映射到原图尺寸
+
+            bbox_mask = mmcv.imresize(mask_pred_, (w, h))
             bbox_mask = (bbox_mask > rcnn_test_cfg.mask_thr_binary).astype(
-                np.uint8)       # 只在box尺寸内进行mask二值化处理
-            im_mask[bbox[1]:bbox[1] + h, bbox[0]:bbox[0] + w] = bbox_mask  # im_mask就是个像素掩膜，分割出的地方是1，其他全是0，尺寸等同原图
+                np.uint8)
+            im_mask[bbox[1]:bbox[1] + h, bbox[0]:bbox[0] + w] = bbox_mask
             rle = mask_util.encode(
                 np.array(im_mask[:, :, np.newaxis], order='F'))[0]
             cls_segms[label - 1].append(rle)

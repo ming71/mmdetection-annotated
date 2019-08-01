@@ -1,16 +1,12 @@
 from .two_stage import TwoStageDetector
 from ..registry import DETECTORS
-import ipdb
 
-# 利用super的构造函数继承，递归地搭建了计算图！
-# 依次递归到父类去build初始化
-# 递归继承中，只有Module类继承构造函数，其他的继承的是定制函数
+
 @DETECTORS.register_module
 class MaskRCNN(TwoStageDetector):
-    # ipdb.set_trace()
+
     def __init__(self,
                  backbone,
-                 neck,
                  rpn_head,
                  bbox_roi_extractor,
                  bbox_head,
@@ -18,11 +14,13 @@ class MaskRCNN(TwoStageDetector):
                  mask_head,
                  train_cfg,
                  test_cfg,
+                 neck=None,
+                 shared_head=None,
                  pretrained=None):
-        # ipdb.set_trace()
         super(MaskRCNN, self).__init__(
             backbone=backbone,
             neck=neck,
+            shared_head=shared_head,
             rpn_head=rpn_head,
             bbox_roi_extractor=bbox_roi_extractor,
             bbox_head=bbox_head,
@@ -31,7 +29,6 @@ class MaskRCNN(TwoStageDetector):
             train_cfg=train_cfg,
             test_cfg=test_cfg,
             pretrained=pretrained)
-        # ipdb.set_trace()
 
 #传入这里的参数是：
 '''
@@ -48,5 +45,3 @@ test_cfg = {'rpn': {'nms_across_levels': False, 'nms_pre': 2000, 'nms_post': 200
 pretrained = None
 后面继承构造函数传入的都是这个
 '''
-
-

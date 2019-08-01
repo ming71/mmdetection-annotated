@@ -1,0 +1,67 @@
+
+
+
+###############################################
+###########       anchor_heads
+###############################################
+
+————————————   AnchorHead ————————————————————
+AnchorHead(nn.Module)
+输入参数：
+        num_classes       (int)：     Number of classes(对于二阶段如RPN处，是2，用于区分前景背景；对于单阶段，为如81等，直接进行分类回归)
+        in_channels       (int):      Number of channels in the input feature map.
+        feat_channels     (int):      Number of channels of the feature map.
+        anchor_scales     (Iterable): Anchor scales.
+        anchor_ratios     (Iterable): Anchor aspect ratios.
+        anchor_strides    (Iterable): Anchor strides.
+        anchor_base_sizes (Iterable): Anchor base sizes.
+        target_means      (Iterable): Mean values of regression targets.
+        target_stds       (Iterable): Std values of regression targets.
+        loss_cls (dict): Config of classification loss.
+        loss_bbox (dict): Config of localization loss.
+
+功能：
+    (1)对一些参数进行了必要的赋值
+    (2)根据配置生成了各个尺度的anchor box
+    (3)指定分类和回归的损失类型并进行build配置
+
+
+————————————   RPNHead ————————————————————
+class RPNHead(AnchorHead)
+输入参数：（继承自上面AnchorHead,所以大多数一样）
+        num_classes = 2                         # RPN的anchor只区分前景和背景，通过RPNHead的构造函数直接指定，然后给父类AnchorHead的
+        in_channels = 256
+        feat_channels = 256
+        anchor_scales = [8]
+        anchor_ratios = [0.5, 1.0, 2.0]
+        anchor_strides = [4, 8, 16, 32, 64]     # anchor的步长，对应着降采样步长
+        anchor_base_sizes = None                # 如果不指明该项的值，默认会置为为anchor_strides
+        target_means = [0.0, 0.0, 0.0, 0.0]
+        target_stds = [1.0, 1.0, 1.0, 1.0]
+        'loss_cls': {'type': 'CrossEntropyLoss', 'use_sigmoid': True, 'loss_weight': 1.0}, 
+        'loss_bbox': {'type': 'SmoothL1Loss', 'beta': 0.1111111111111111, 'loss_weight': 1.0}
+功能：
+    (1)生成anchor(在AnchorHead的构造函数中进行的),作为self的属性self.anchor_generators，该列表元素为类的实例，每个对应一个尺度的anchor组
+    (2)构建对单个anchor进行分类和回归的网络
+
+        
+###############################################
+###########       mask_heads
+############################################### 
+
+————————————   FCNMaskHead ——————————————
+继承关系：   FCNMaskHead(nn.Module)
+输入参数：   num_convs=4,                    # 经过RoiAlign处理的14*14检测结果进行几个卷积处理
+            in_channels=256,
+            conv_out_channels=256,
+            num_classes=81                  # 生成mask的数目
+            （上述为MaskRCNN的参数，更多参数设置直接查看类构造函数）
+inference输出:        mask
+
+
+
+
+
+
+
+        

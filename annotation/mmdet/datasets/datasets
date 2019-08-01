@@ -1,0 +1,23 @@
+
+关于dataset介绍：
+  1. 管理方式：Registry.
+    通过DATASETS进行具体数据集对应类实例的 注册 和 调用 。
+      (1)注册：通过Registry管理
+      (2)调用build：build时会调用dataset类的具体方法，如图片/标注的解析等。
+             
+
+  2. 数据集类别和关系
+  	常见数据集之间的继承关系：
+  		CocoDataset --> CustomDataset --> torch.utils.data.Dataset
+  		VOCDataset --> XMLDataset --> CustomDataset --> torch.utils.data.Dataset
+
+  3. MyDataset
+  	(1)简单继承
+  		标注用的coco或者voc格式时，直接继承自CocoDataset或者XMLDataset，然后修改类别即可。
+  	(2)自定义格式
+  		在数据集的label和上述标准不同，或者连格式都是完全自定义（如yolo，武大遥感车辆的txt标注）时，通过重写load_annotations和get_ann_info函数（参考COCO和VOC）完成。
+  	(3)建议方式：
+  		在datasets文件夹下新建my_dataset文件，在其内定义自己的数据集类型，并在__init__.py中导入搜索路径即可被查询。
+
+  4. 常见数据集
+    COCO和VOC在初始化都有一个CLASS变量，存放所有类别。

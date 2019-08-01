@@ -4,10 +4,47 @@ def train_detector(model,dataset,cfg,distributed=False,validate=False,logger=Non
 -----[主要函数]-----------------------------------------------------
 def _non_dist_train(model, dataset, cfg, validate=False)
 	功能：非分布式训练入口
+	步骤：（本部分涉及runner方法的部分参见runner的注释）
+		1. 数据加载data_loaders封装：定位到mmdet/datasets/loader/build_loader.py，参见datasets/loader说明
+		2. 模型加载MMDataParallel：继承自torch.nn.DataParallel，管理多GPU并行计算。这个又是封装在mmcv的东西，查看过去发现构造函数未单独定义，仍用DataParallel格式，指定模型和gpu即可（多GPU用list）
+		3. 编译Runner（本步骤只是将相关参数传递，没有任何的构建和运行。就像model的build一样只放了模块没有连接和顺序）。
+		4. 注册钩子。
+		5. 断点加载或文件加载数据，分别使用runner.resume和runner.load_checkpoint函数。
+		6. 开始训练runner.run(data_loaders, cfg.workflow, cfg.total_epochs)。
 
 
----------------------------------------------------------------------
+def build_optimizer(model, optimizer_cfg)
+	功能：配置优化器参数（待填坑）
+
+
 def batch_processor(model, data, train_mode)
-功能：该函数是主要的训练函数，用于处理单个batch数据
-实现：注释参见相应的程序段。
-注意：在这里真正实现了前向传播，将图片是、信息传递到模型 进行前向计算。但是核心和复杂的部分又不在这里，而是各个模块的forward方法
+	功能：该函数是主要的训练函数，用于处理单个batch数据
+	实现：注释参见相应的程序段。调用方法是将该函数传入runner，然后在runner.run()中调用该函数。
+		具体代码段为：outputs = self.batch_processor(
+                		self.model, data_batch, train_mode=True, **kwargs)
+
+
+def parse_losses(losses)
+	功能：计算损失
+
+	如Faster RCNN的输出：
+		{
+		    'loss_rpn_cls': [
+		        tensor(0.6204, device='cuda:0', grad_fn=<MulBackward0>), 
+		        tensor(0.0567, device='cuda:0', grad_fn=<MulBackward0>), 
+		        tensor(0.0220, device='cuda:0', grad_fn=<MulBackward0>), 
+		        tensor(0., device='cuda:0', grad_fn=<MulBackward0>), 
+		        tensor(0., device='cuda:0', grad_fn=<MulBackward0>)], 
+		    'loss_rpn_bbox': [
+		        tensor(0.5475, device='cuda:0', grad_fn=<MulBackward0>), 
+		        tensor(0., device='cuda:0', grad_fn=<MulBackward0>), 
+		        tensor(0., device='cuda:0', grad_fn=<MulBackward0>), 
+		        tensor(0., device='cuda:0', grad_fn=<MulBackward0>), 
+		        tensor(0., device='cuda:0', grad_fn=<MulBackward0>)], 
+		    'loss_cls': 
+		        tensor(4.3445, device='cuda:0', grad_fn=<MulBackward0>), 
+		    'acc': 
+		        tensor([0.], device='cuda:0'), 
+		    'loss_bbox': 
+		        tensor(5.2616e-05, device='cuda:0', grad_fn=<MulBackward0>)
+		}

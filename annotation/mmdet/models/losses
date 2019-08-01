@@ -1,0 +1,44 @@
+先看看__init__.py，就能大致直到引入了哪些类型loss可供选择，以及通过哪些文件配置，以便底层更改：
+
+from .accuracy import accuracy, Accuracy
+from .cross_entropy_loss import (cross_entropy, binary_cross_entropy,
+                                 mask_cross_entropy, CrossEntropyLoss)
+from .focal_loss import sigmoid_focal_loss, FocalLoss
+from .smooth_l1_loss import smooth_l1_loss, SmoothL1Loss
+from .ghm_loss import GHMC, GHMR
+from .balanced_l1_loss import balanced_l1_loss, BalancedL1Loss
+from .mse_loss import mse_loss, MSELoss
+from .iou_loss import iou_loss, bounded_iou_loss, IoULoss, BoundedIoULoss
+from .utils import reduce_loss, weight_reduce_loss, weighted_loss
+
+构建方法和以前不同，这次改动后统一采用registry进行管理。所以子函数方法会调用静态修饰器提前把loss实现类的函数名传递到搜索字典中去。
+该loss的类实际以继承自nn.Module的层的形式进行封装，通过执行前向传播来实现loss计算（在forward定义计算）
+调用方法：
+	首先是head初始化的build进行组件堆叠时，调用loss层的构造函数__init__，初始化loss层作为一个层被加进去叠上，返回一个layer的类；在进行前向传播时，通过传入计算参数，调用forward函数执行传播
+
+---------  CrossEntropyLoss  ----------------------------------------------------------------------
+class CrossEntropyLoss(nn.Module)
+输入参数：
+	use_sigmoid=False,
+    use_mask=False,
+    reduction='mean',
+    loss_weight=1.0，
+
+
+
+
+
+
+
+----------  SmoothL1Loss  ---------------------------------------------------------------------
+class SmoothL1Loss(nn.Module)
+输入参数：
+	def __init__(self, beta=1.0, reduction='mean', loss_weight=1.0)
+
+
+
+
+
+
+
+-------------------------------------------------------------------------------

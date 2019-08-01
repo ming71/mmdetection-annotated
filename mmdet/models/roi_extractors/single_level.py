@@ -3,13 +3,11 @@ from __future__ import division
 import torch
 import torch.nn as nn
 
-from mmdet import ops   # 用于导入RoIAlign，NMS等
+from mmdet import ops  # 用于导入RoIAlign，NMS等
+from mmdet.core import force_fp32
 from ..registry import ROI_EXTRACTORS
 
-import ipdb
-
 # 在registry注册并通过修饰器添加该处的字典属性
-# 于cfg参数传递索引到'type': 'SingleRoIExtractor'时，在此处进行类参数的实例化
 @ROI_EXTRACTORS.register_module
 class SingleRoIExtractor(nn.Module):
     """Extract RoI features from a single level feature map.
@@ -34,6 +32,7 @@ class SingleRoIExtractor(nn.Module):
         self.out_channels = out_channels
         self.featmap_strides = featmap_strides
         self.finest_scale = finest_scale
+        self.fp16_enabled = False
 
     @property
     def num_inputs(self):
@@ -47,25 +46,22 @@ class SingleRoIExtractor(nn.Module):
         cfg = layer_cfg.copy()
         layer_type = cfg.pop('type')
         assert hasattr(ops, layer_type)
-        # 导入了ops的__init__.py,getattr(ops, layer_type)取出其中的RoIAlign类，得到结果：
+        # 下面导入了ops的__init__.py,getattr(ops, layer_type)取出其中的RoIAlign类，得到结果：
         # <class 'mmdet.ops.roi_align.modules.roi_align.RoIAlign'>
         layer_cls = getattr(ops, layer_type)
-        # RoIAign的构造输入out_size，spatial_scale，sample_num，下面传入
         # 由于有键值对，不用在意顺序
         roi_layers = nn.ModuleList(
             [layer_cls(spatial_scale=1 / s, **cfg) for s in featmap_strides])
         return roi_layers
 
-    # 该函数用于将每个roi进行level的分配
     # 得到的target_lvls是一维向量，每个元素对应一个proposal的level
     def map_roi_levels(self, rois, num_levels):
-        # ipdb.set_trace()
         """Map rois to corresponding feature levels by scales.
 
-        - scale < finest_scale: level 0
-        - finest_scale <= scale < finest_scale * 2: level 1
-        - finest_scale * 2 <= scale < finest_scale * 4: level 2
-        - scale >= finest_scale * 4: level 3
+        - scale < finest_scale * 2: level 0
+        - finest_scale * 2 <= scale < finest_scale * 4: level 1
+        - finest_scale * 4 <= scale < finest_scale * 8: level 2
+        - scale >= finest_scale * 8: level 3
 
         Args:
             rois (Tensor): Input RoIs, shape (k, 5).
@@ -80,22 +76,23 @@ class SingleRoIExtractor(nn.Module):
         target_lvls = target_lvls.clamp(min=0, max=num_levels - 1).long()
         return target_lvls
 
+    @force_fp32(apply_to=('feats',), out_fp16=True)
     def forward(self, feats, rois):
         if len(feats) == 1:
             return self.roi_layers[0](feats[0], rois)
 
         out_size = self.roi_layers[0].out_size
         num_levels = len(feats) # 特征图的张数决定了有几个level的输出
-        # 一维向量，每个元素对应一个proposal的level
+        # 一维向量，每个元素对应一个proposal的level；将rois缩放到特征图上
         target_lvls = self.map_roi_levels(rois, num_levels)
         # roi_feats为 torch.Size([2000, 256, 7, 7])
-        roi_feats = torch.cuda.FloatTensor(rois.size()[0], self.out_channels,
-                                           out_size, out_size).fill_(0)
+        roi_feats = feats[0].new_zeros(rois.size()[0], self.out_channels,
+                                       out_size, out_size)
         for i in range(num_levels):
-            # 对每个level取出对应的proposal进行处理
             inds = target_lvls == i
             if inds.any():
                 rois_ = rois[inds, :]
+                # 隐式前向传播
                 roi_feats_t = self.roi_layers[i](feats[i], rois_)
                 roi_feats[inds] += roi_feats_t
         return roi_feats

@@ -1,0 +1,5 @@
+
+这里的all变量包含了所有引入的变量，下面两句比较重要：
+
+from .train import train_detector
+from .inference import init_detector, inference_detector, show_result

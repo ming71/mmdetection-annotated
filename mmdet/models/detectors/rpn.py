@@ -6,8 +6,6 @@ from .test_mixins import RPNTestMixin
 from .. import builder
 from ..registry import DETECTORS
 
-import ipdb
-
 
 @DETECTORS.register_module
 class RPN(BaseDetector, RPNTestMixin):

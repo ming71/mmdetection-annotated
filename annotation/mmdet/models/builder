@@ -1,0 +1,16 @@
+
+7个基本大类的build,按照Registry的不同占位层进行不同配置
+    主要原因是每个大类对应不同功能，落实在其_module_dict包含不同的层（class）,所以分开build
+    build_backbone (cfg)  
+    build_neck(cfg) 
+    build_roi_extractor(cfg)
+    build_head(cfg) 
+    build_shared_head(cfg)
+    build_loss(cfg)
+    build_detector(cfg, train_cfg=None, test_cfg=None)
+
+build(cfg, registry, default_args=None)
+    上述7个函数均调用该build函数，通过registry标志进行选择（BACKBONES等7个），
+    其中DETECTORS特有训练和检测的配置信息，从原始cfg中分离出来（这里传入的cfg实际是cfg.model，也就是参数配置cfg中的模型配置）
+    
+

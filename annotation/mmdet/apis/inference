@@ -1,18 +1,26 @@
-主要是inference阶段的一些东西,这里是用的数据都是py配置文件的data.test的参数（test_cfg数据是模型参数，在model搭建时已经传入用于构建RPN等）
 
-inference_detector(model, imgs, cfg, device='cuda:0')
+改动：和原来变化不大，只是多加了个init_detector多封装一层，原来直接build_detector，现在先传入这个init再在其内调用build
+
+功能：主要是inference阶段的一些东西,这里是用的数据都是py配置文件的data.test的参数（test_cfg数据是模型参数，在model搭建时已经传入用于构建RPN等）
+
+代码注释：参见最原始版本的注释
+
+init_detector(config, checkpoint=None, device='cuda:0'):
+	调用build_detector；加载断点权参数到模型上；配置class属性;
+    模型设置eval放到gpu
+
+
+
+inference_detector(model, imgs)
     搭建检测器：
         实例化图像变换类ImageTransform，传入两个参数：cfg.data.test.size_divisor和**cfg.img_norm_cfg（初始化类的一些配置）
-        模型设置eval放到gpu
-        根据输入的是图片list还是单张图片传入不同函数处理得到结果
+        根据输入的是图片list还是单张图片传入不同函数处理得到结果（支持list等可迭代对象输入）
         
 _inference_generator(model, imgs, img_transform, cfg, device)   
     迭代多张图片，返回生成器的形式
     
 _inference_single(model, img, img_transform, cfg, device)
     inference前向传播
-    
-    
     
     
 show_result(img, result, dataset='coco', score_thr=0.3, out_file=None)

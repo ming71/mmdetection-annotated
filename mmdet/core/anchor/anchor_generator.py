@@ -1,6 +1,5 @@
 import torch
 
-import ipdb 
 
 class AnchorGenerator(object):
 
@@ -10,7 +9,6 @@ class AnchorGenerator(object):
         self.ratios = torch.Tensor(ratios)
         self.scale_major = scale_major
         self.ctr = ctr
-        # 该函数生成当前降采样步长（如4）的三个ratio的anchor，shape为（3,4）
         self.base_anchors = self.gen_base_anchors()
 
     @property
@@ -18,7 +16,6 @@ class AnchorGenerator(object):
         return self.base_anchors.size(0)
 
     def gen_base_anchors(self):
-        # ipdb.set_trace()
         w = self.base_size
         h = self.base_size
         if self.ctr is None:

@@ -1,0 +1,36 @@
+
+————————————   ResNet ————————————————————
+
+继承关系：
+    继承自nn.Module基类，无需担心
+    
+传入参数(ResNet-101)：
+    1.  首先在build pop去掉了type名，然后经过**unpack后将backbone字典解压成：形参 = 实参 的形式，传入构造函数
+        如:  self = ResNet()
+             depth = 101                                        # 网络层数
+             num_stages = 4                                     # stages数目，降采样尺度
+             strides = (1, 2, 2, 2)
+             dilations = (1, 1, 1, 1)
+             out_indices = (0, 1, 2, 3)                         # 输出的stage的序号
+             style = 'pytorch'                                  # 网络风格: 如果设置pytorch，则stride为2的层是conv3x3的卷积层；
+                                                                       如果设置caffe，  则stride为2的层是第一个conv1x1的卷积层        
+            frozen_stages = 1                                  # 冻结的stage数量，即该stage不更新参数，-1表示所有的stage都更新参数
+            normalize = {'type': 'BN', 'frozen': False}
+            norm_eval = True
+            dcn = None
+            stage_with_dcn = (False, False, False, False)
+            with_cp = False
+            zero_init_residual = True
+    2.  类初始参数：
+              arch_settings = { 18: (BasicBlock, (2, 2, 2, 2)),
+                                34: (BasicBlock, (3, 4, 6, 3)),
+                                50: (Bottleneck, (3, 4, 6, 3)),
+                                101: (Bottleneck, (3, 4, 23, 3)),
+                                152: (Bottleneck, (3, 8, 36, 3))
+        预设了五种不同的resnet结构，dict的key是深度，value是tuple，包含一个class(选用哪个模块作來搭建)和一个各stage模块数的tuple
+        resnet-108为例，不同stage分别是3,4,23,3个Bottleneck模块，而降采样步长为1, 2, 2, 2，dilation是1,1,1,1
+
+
+
+    
+

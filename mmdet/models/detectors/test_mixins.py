@@ -1,20 +1,12 @@
 from mmdet.core import (bbox2roi, bbox_mapping, merge_aug_proposals,
                         merge_aug_bboxes, merge_aug_masks, multiclass_nms)
 
-import ipdb 
-
 
 class RPNTestMixin(object):
-    # 注意：这里的函数处理的x其第0个维度都是img_id，也就是bs（图片的张数）
-    # 一般用这个生成proposals
+
     def simple_test_rpn(self, x, img_meta, rpn_test_cfg):
-        # ipdb.set_trace()
-        # 对所有特征图直接进行处理，得到RPN处理结果：
-        # tuple两个元素，分别是前景背景分类和回归结果，长度按照每像素3个anchor算，每个元素的长度为特征图数目
-        rpn_outs = self.rpn_head(x)     
+        rpn_outs = self.rpn_head(x)
         proposal_inputs = rpn_outs + (img_meta, rpn_test_cfg)
-        # list的元素对应每张图片，元素为proposals，shape为[2000,5]，cxywh
-        # 得到的proposal可以小于2000,不填充
         proposal_list = self.rpn_head.get_bboxes(*proposal_inputs)
         return proposal_list
 
@@ -25,38 +17,39 @@ class RPNTestMixin(object):
             proposal_list = self.simple_test_rpn(x, img_meta, rpn_test_cfg)
             for i, proposals in enumerate(proposal_list):
                 aug_proposals[i].append(proposals)
+        # reorganize the order of 'img_metas' to match the dimensions
+        # of 'aug_proposals'
+        aug_img_metas = []
+        for i in range(imgs_per_gpu):
+            aug_img_meta = []
+            for j in range(len(img_metas)):
+                aug_img_meta.append(img_metas[j][i])
+            aug_img_metas.append(aug_img_meta)
         # after merging, proposals will be rescaled to the original image size
         merged_proposals = [
-            merge_aug_proposals(proposals, img_meta, rpn_test_cfg)
-            for proposals, img_meta in zip(aug_proposals, img_metas)
+            merge_aug_proposals(proposals, aug_img_meta, rpn_test_cfg)
+            for proposals, aug_img_meta in zip(aug_proposals, aug_img_metas)
         ]
         return merged_proposals
 
+
 class BBoxTestMixin(object):
-    # 注意：这里的函数处理的x其第0个维度都是img_id，也就是bs（图片的张数）
+
     def simple_test_bboxes(self,
                            x,
                            img_meta,
                            proposals,
                            rcnn_test_cfg,
                            rescale=False):
-        
         """Test only det bboxes without augmentation."""
-        # 输入是每个bs各个图片的proposals构成的list
-        # 输出是一个tensor，shape[n',5]，其中n'是所有proposal数目之和（做了整个batch的proposal的concat）
-        # 前四个是xywh，第五元素舍弃排序后没用的分类得分，替代以当前proposal属于哪张图片的index(0开始)
         rois = bbox2roi(proposals)
-        # 下面真正进行RoI操作：将得到的proposals RoIAlign到指定大小（7*7）
-        # 输出如：[2000, 256, 7, 7]
         roi_feats = self.bbox_roi_extractor(
             x[:len(self.bbox_roi_extractor.featmap_strides)], rois)
-        # 将RoIs送入bbox_head进行分类回归得到分类分数和回归偏移,分别为[2000, 81]，[2000, 81*4]
-        # 如maskrcnn的为SharedFCBBoxHead
+        if self.with_shared_head:
+            roi_feats = self.shared_head(roi_feats)
         cls_score, bbox_pred = self.bbox_head(roi_feats)
         img_shape = img_meta[0]['img_shape']
         scale_factor = img_meta[0]['scale_factor']
-        # 传入rois,相当于RPN的anchor，bbox_reg是对其进行修正的
-        # 精秀roi并NMS，得到真正需要的结果bbox:[N,5=cxywh]以及label:[N]
         det_bboxes, det_labels = self.bbox_head.get_det_bboxes(
             rois,
             cls_score,
@@ -82,6 +75,8 @@ class BBoxTestMixin(object):
             # recompute feature maps to save GPU memory
             roi_feats = self.bbox_roi_extractor(
                 x[:len(self.bbox_roi_extractor.featmap_strides)], rois)
+            if self.with_shared_head:
+                roi_feats = self.shared_head(roi_feats)
             cls_score, bbox_pred = self.bbox_head(roi_feats)
             bboxes, scores = self.bbox_head.get_det_bboxes(
                 rois,
@@ -118,18 +113,14 @@ class MaskTestMixin(object):
         else:
             # if det_bboxes is rescaled to the original image size, we need to
             # rescale it back to the testing scale to obtain RoIs.
-            _bboxes = (det_bboxes[:, :4] * scale_factor
-                       if rescale else det_bboxes)
-            # 同样将所有的bbox取出定位信息，然后原来的分类信息改为图片index，进行通道融合混合所有图片的检测目标
+            _bboxes = (
+                det_bboxes[:, :4] * scale_factor if rescale else det_bboxes)
             mask_rois = bbox2roi([_bboxes])
-            # mask rcnn在检测基础上先RoIAlign，因此使用了SingleRoIExtractor，定位到single_level文件里，再次进行RoIAlign
-            # 得到的mask特征图为[100, 256, 14, 14]
             mask_feats = self.mask_roi_extractor(
                 x[:len(self.mask_roi_extractor.featmap_strides)], mask_rois)
-            # 卷积和转置卷积特征提取，按照类别进行打分，最后的到特征图[100, 81, 28, 28]
+            if self.with_shared_head:
+                mask_feats = self.shared_head(mask_feats)
             mask_pred = self.mask_head(mask_feats)
-            # 将得到的小特征图映射到bbox内，然后进行得分的二值化，生成一个mask，分割的地方是1,其余都是0,尺寸等同于原图大小
-            # 这里就需要传入设置信息test_cfg.rcnn（test_cfg仅有两处超参数传入，一个是RPN一个是这里）
             segm_result = self.mask_head.get_seg_masks(
                 mask_pred, _bboxes, det_labels, self.test_cfg.rcnn, ori_shape,
                 scale_factor, rescale)
@@ -150,6 +141,8 @@ class MaskTestMixin(object):
                 mask_feats = self.mask_roi_extractor(
                     x[:len(self.mask_roi_extractor.featmap_strides)],
                     mask_rois)
+                if self.with_shared_head:
+                    mask_feats = self.shared_head(mask_feats)
                 mask_pred = self.mask_head(mask_feats)
                 # convert to numpy array to save memory
                 aug_masks.append(mask_pred.sigmoid().cpu().numpy())

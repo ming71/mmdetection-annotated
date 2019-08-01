@@ -1,0 +1,15 @@
+
+
+————————————   BBoxHead ——————————————
+继承关系：   BBoxHead(nn.Module)
+功能：       是其他box_head的最高父类
+
+————————————   ConvFCBBoxHeadd ——————————————
+继承关系：   ConvFCBBoxHead(BBoxHead)
+功能：  执行分类和回归得到对应的分数与偏移
+
+————————————   SharedFCBBoxHead ——————————————  
+继承关系：   SharedFCBBoxHead(ConvFCBBoxHead)  
+功能： 
+    实际上这个层基本是闲置的，就是为了以后的封装多样化其他高级设置而加入。实际调用时在config文件都是该模块为type名，但是构造函数之后直接进入ConvFCBBoxHeadd     
+        

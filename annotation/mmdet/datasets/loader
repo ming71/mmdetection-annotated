@@ -1,0 +1,14 @@
+
+
+============== loader文件夹 ==============
+
+-------- build_loader -------
+DataLoader封装：
+	采用的是pytorch内置方法：class torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=False, sampler=None, batch_sampler=None, num_workers=0, collate_fn=<function default_collate>, pin_memory=False, drop_last=False);
+
+
+
+采样器Sampler:(先不细看，留坑)
+	决定每个batch样本的获取方式，并设置bs和工作线程数;继承的最高父类是torch.utils.data.sampler的Sampler。
+	关于Sampler:
+		所有采样器的基础类。每个采样器子类必须提供一个__iter__方法，提供一种迭代数据集元素的索引的方法，以及返回迭代器长度的__len__方法。

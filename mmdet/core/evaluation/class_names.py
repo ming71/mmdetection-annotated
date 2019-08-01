@@ -1,6 +1,10 @@
 import mmcv
 
 
+def wider_face_classes():
+    return ['face']
+
+
 def voc_classes():
     return [
         'aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car', 'cat',
@@ -82,7 +86,8 @@ dataset_aliases = {
     'voc': ['voc', 'pascal_voc', 'voc07', 'voc12'],
     'imagenet_det': ['det', 'imagenet_det', 'ilsvrc_det'],
     'imagenet_vid': ['vid', 'imagenet_vid', 'ilsvrc_vid'],
-    'coco': ['coco', 'mscoco', 'ms_coco']
+    'coco': ['coco', 'mscoco', 'ms_coco'],
+    'wider_face': ['WIDERFaceDataset', 'wider_face', 'WDIERFace']
 }
 
 
@@ -95,8 +100,6 @@ def get_classes(dataset):
 
     if mmcv.is_str(dataset):
         if dataset in alias2name:
-            # eval执行字符串对应名的函数，如默认是coco_classes
-            # 返回类别名的list
             labels = eval(alias2name[dataset] + '_classes()')
         else:
             raise ValueError('Unrecognized dataset: {}'.format(dataset))

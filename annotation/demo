@@ -1,0 +1,19 @@
+用于检测demo，可以对单个图片或者文件夹下所有图片进行检测并存储。
+
+分析demo运行过程：
+
+1. from mmdet.apis import init_detector, inference_detector, show_result
+	和之前一样，在import时会索引对应文件夹的__init__.py文件，
+	这里找到mmdet.apis，其下的__init__.py的all包含了需要import的变量名，但是这些变量又是层层导入的，又import了一堆
+不赘述
+	注意：其实只要不因用Registry，基本都没什么预执行的命令
+
+2. init_detector(config_file, checkpoint_file, device='cuda:0')
+	原来是直接build_detector(cfg.model, test_cfg=cfg.test_cfg)，现在用这个函数在其内部build，并加载权重，配置CLASS属性
+
+3. inference_detector(model, imgs)
+	进行图像的变换（inference没用）；
+	根据输入的imgs是否为可迭代对象进行检测（可以直接输入folder的可迭代list路径）
+
+4. show_result(img, result, model.CLASSES)
+	和以前一样，只是这次吧class_name使用Registry管理，作为model的属性直接传给mmcv了

@@ -6,12 +6,12 @@ import torch.nn as nn
 from mmcv.cnn import normal_init
 
 from mmdet.core import (AnchorGenerator, anchor_target, delta2bbox,
-                        multi_apply, weighted_cross_entropy, weighted_smoothl1,
-                        weighted_binary_cross_entropy,
-                        weighted_sigmoid_focal_loss, multiclass_nms)
+                        multi_apply, multiclass_nms, force_fp32)
+from ..builder import build_loss
 from ..registry import HEADS
 
 import ipdb
+
 
 @HEADS.register_module
 class AnchorHead(nn.Module):
@@ -26,51 +26,56 @@ class AnchorHead(nn.Module):
         anchor_base_sizes (Iterable): Anchor base sizes.
         target_means (Iterable): Mean values of regression targets.
         target_stds (Iterable): Std values of regression targets.
-        use_sigmoid_cls (bool): Whether to use sigmoid loss for classification.
-            (softmax by default)
-        use_focal_loss (bool): Whether to use focal loss for classification.
+        loss_cls (dict): Config of classification loss.
+        loss_bbox (dict): Config of localization loss.
     """  # noqa: W605
 
     def __init__(self,
-                 num_classes,   # rpn为2,ssd为81,功能不一样
+                 num_classes,   
                  in_channels,
                  feat_channels=256,
                  anchor_scales=[8, 16, 32],
                  anchor_ratios=[0.5, 1.0, 2.0],
-                 anchor_strides=[4, 8, 16, 32, 64], #降采样步长
+                 anchor_strides=[4, 8, 16, 32, 64],  # 降采样步长
                  anchor_base_sizes=None,
                  target_means=(.0, .0, .0, .0),
                  target_stds=(1.0, 1.0, 1.0, 1.0),
-                 use_sigmoid_cls=False,
-                 use_focal_loss=False):
+                 loss_cls=dict(
+                     type='CrossEntropyLoss',
+                     use_sigmoid=True,
+                     loss_weight=1.0),
+                 loss_bbox=dict(
+                     type='SmoothL1Loss', beta=1.0 / 9.0, loss_weight=1.0)):
         super(AnchorHead, self).__init__()
-        # ipdb.set_trace()
+        # ipdb.set_trace(context=35)
         self.in_channels = in_channels
         self.num_classes = num_classes
         self.feat_channels = feat_channels
         self.anchor_scales = anchor_scales
         self.anchor_ratios = anchor_ratios
         self.anchor_strides = anchor_strides
+        # self.anchor_base_sizes被置为self.anchor_strides即降采样步长（如果不设置anchor_base_sizes的固定尺寸）
         self.anchor_base_sizes = list(
             anchor_strides) if anchor_base_sizes is None else anchor_base_sizes
         self.target_means = target_means
         self.target_stds = target_stds
-        self.use_sigmoid_cls = use_sigmoid_cls
-        self.use_focal_loss = use_focal_loss
+        
+        self.use_sigmoid_cls = loss_cls.get('use_sigmoid', False) # 查看是否使用sigmoid，如果没写默认False
+        self.sampling = loss_cls['type'] not in ['FocalLoss', 'GHMC'] # 如果不是focal或者GHMC则采样标志为True，否则不可直接采样
+        if self.use_sigmoid_cls:
+            self.cls_out_channels = num_classes - 1
+        else:
+            self.cls_out_channels = num_classes
+        self.loss_cls = build_loss(loss_cls)
+        self.loss_bbox = build_loss(loss_bbox)
+        self.fp16_enabled = False
 
         self.anchor_generators = []
-        # self.anchor_base_sizes被置为self.anchor_strides即降采样步长
         for anchor_base in self.anchor_base_sizes:
-            # 添加的是针对每个stride生成的anchor类对象
             self.anchor_generators.append(
                 AnchorGenerator(anchor_base, anchor_scales, anchor_ratios))
 
         self.num_anchors = len(self.anchor_ratios) * len(self.anchor_scales)
-        if self.use_sigmoid_cls:
-            self.cls_out_channels = self.num_classes - 1    # sigmoid二分类
-        else:
-            self.cls_out_channels = self.num_classes
-        # 注意这个self是RPNHead(),所以执行的self._init_layers()不在下面，而是rpn的方法
         self._init_layers()
 
     def _init_layers(self):
@@ -132,47 +137,24 @@ class AnchorHead(nn.Module):
     def loss_single(self, cls_score, bbox_pred, labels, label_weights,
                     bbox_targets, bbox_weights, num_total_samples, cfg):
         # classification loss
-        if self.use_sigmoid_cls:
-            labels = labels.reshape(-1, self.cls_out_channels)
-            label_weights = label_weights.reshape(-1, self.cls_out_channels)
-        else:
-            labels = labels.reshape(-1)
-            label_weights = label_weights.reshape(-1)
-        cls_score = cls_score.permute(0, 2, 3, 1).reshape(
-            -1, self.cls_out_channels)
-        if self.use_sigmoid_cls:
-            if self.use_focal_loss:
-                cls_criterion = weighted_sigmoid_focal_loss
-            else:
-                cls_criterion = weighted_binary_cross_entropy
-        else:
-            if self.use_focal_loss:
-                raise NotImplementedError
-            else:
-                cls_criterion = weighted_cross_entropy
-        if self.use_focal_loss:
-            loss_cls = cls_criterion(
-                cls_score,
-                labels,
-                label_weights,
-                gamma=cfg.gamma,
-                alpha=cfg.alpha,
-                avg_factor=num_total_samples)
-        else:
-            loss_cls = cls_criterion(
-                cls_score, labels, label_weights, avg_factor=num_total_samples)
+        labels = labels.reshape(-1)
+        label_weights = label_weights.reshape(-1)
+        cls_score = cls_score.permute(0, 2, 3,
+                                      1).reshape(-1, self.cls_out_channels)
+        loss_cls = self.loss_cls(
+            cls_score, labels, label_weights, avg_factor=num_total_samples)
         # regression loss
         bbox_targets = bbox_targets.reshape(-1, 4)
         bbox_weights = bbox_weights.reshape(-1, 4)
         bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(-1, 4)
-        loss_reg = weighted_smoothl1(
+        loss_bbox = self.loss_bbox(
             bbox_pred,
             bbox_targets,
             bbox_weights,
-            beta=cfg.smoothl1_beta,
             avg_factor=num_total_samples)
-        return loss_cls, loss_reg
+        return loss_cls, loss_bbox
 
+    @force_fp32(apply_to=('cls_scores', 'bbox_preds'))
     def loss(self,
              cls_scores,
              bbox_preds,
@@ -186,7 +168,6 @@ class AnchorHead(nn.Module):
 
         anchor_list, valid_flag_list = self.get_anchors(
             featmap_sizes, img_metas)
-        sampling = False if self.use_focal_loss else True
         label_channels = self.cls_out_channels if self.use_sigmoid_cls else 1
         cls_reg_targets = anchor_target(
             anchor_list,
@@ -199,14 +180,14 @@ class AnchorHead(nn.Module):
             gt_bboxes_ignore_list=gt_bboxes_ignore,
             gt_labels_list=gt_labels,
             label_channels=label_channels,
-            sampling=sampling)
+            sampling=self.sampling)
         if cls_reg_targets is None:
             return None
         (labels_list, label_weights_list, bbox_targets_list, bbox_weights_list,
          num_total_pos, num_total_neg) = cls_reg_targets
-        num_total_samples = (num_total_pos if self.use_focal_loss else
-                             num_total_pos + num_total_neg)
-        losses_cls, losses_reg = multi_apply(
+        num_total_samples = (
+            num_total_pos + num_total_neg if self.sampling else num_total_pos)
+        losses_cls, losses_bbox = multi_apply(
             self.loss_single,
             cls_scores,
             bbox_preds,
@@ -216,13 +197,14 @@ class AnchorHead(nn.Module):
             bbox_weights_list,
             num_total_samples=num_total_samples,
             cfg=cfg)
-        return dict(loss_cls=losses_cls, loss_reg=losses_reg)
+        return dict(loss_cls=losses_cls, loss_bbox=losses_bbox)
 
+    @force_fp32(apply_to=('cls_scores', 'bbox_preds'))
     def get_bboxes(self, cls_scores, bbox_preds, img_metas, cfg,
                    rescale=False):
         assert len(cls_scores) == len(bbox_preds)
         num_levels = len(cls_scores)    # 几张特征图
-        # ipdb.set_trace()
+
         # 得到长度为5的list，对应每张特征图，每个元素的shape为[N,4]，N是生成的总的anchor数目
         mlvl_anchors = [
             self.anchor_generators[i].grid_anchors(cls_scores[i].size()[-2:],
@@ -230,7 +212,6 @@ class AnchorHead(nn.Module):
             for i in range(num_levels)
         ]
         result_list = []
-        # 遍历每张图片
         for img_id in range(len(img_metas)):
             cls_score_list = [
                 cls_scores[i][img_id].detach() for i in range(num_levels)
@@ -262,8 +243,8 @@ class AnchorHead(nn.Module):
         for cls_score, bbox_pred, anchors in zip(cls_scores, bbox_preds,
                                                  mlvl_anchors):
             assert cls_score.size()[-2:] == bbox_pred.size()[-2:]
-            cls_score = cls_score.permute(1, 2, 0).reshape(
-                -1, self.cls_out_channels)
+            cls_score = cls_score.permute(1, 2,
+                                          0).reshape(-1, self.cls_out_channels)
             if self.use_sigmoid_cls:
                 scores = cls_score.sigmoid()
             else:
@@ -290,6 +271,7 @@ class AnchorHead(nn.Module):
         if self.use_sigmoid_cls:
             padding = mlvl_scores.new_zeros(mlvl_scores.shape[0], 1)
             mlvl_scores = torch.cat([padding, mlvl_scores], dim=1)
-        det_bboxes, det_labels = multiclass_nms(
-            mlvl_bboxes, mlvl_scores, cfg.score_thr, cfg.nms, cfg.max_per_img)
+        det_bboxes, det_labels = multiclass_nms(mlvl_bboxes, mlvl_scores,
+                                                cfg.score_thr, cfg.nms,
+                                                cfg.max_per_img)
         return det_bboxes, det_labels
