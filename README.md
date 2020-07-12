@@ -1,5 +1,5 @@
 # Notes!!
-MMDetection-annotations have been update to latest **version 1.0**. I'll continue finish the remaining part and may not chase after upgrades in the future (present version is good enough) 
+MMDetection-annotations have been update to latest **version 1.0**. I'll continue updating but may not chase after upgrades for latest version.
 # mmdetection-annotated 
 
 ## Introduction
@@ -50,7 +50,11 @@ Provide a simple small sample data set for testing (segmentation && detection) .
 I've delete files in folder mmdet/ops cause no annotations attached inside.However it's a good news that specific notes are made about RoIAlign [here](https://zhuanlan.zhihu.com/p/75171514) .
 
 * **Model visualization**  
-Take Mask-RCNN for example , the model can be visualized as follow:(more details refere to [model-structure-png](https://github.com/ming71/mmdetection-annotated/blob/master/annotation/model_vis/maskrcnn-model-inference.png))
+  Take Mask-RCNN for example , the model can be visualized as follow:(more details refere to [model-structure-png](https://github.com/ming71/mmdetection-annotated/blob/master/annotation/model_vis/maskrcnn-model-inference.png))
+
+* **notes**
+
+  
 <div align=center><img src="https://github.com/ming71/mmdetection-annotated/blob/master/annotation/model_vis/inference.png"/></div>
 
 * **Configuration**  
@@ -76,7 +80,5 @@ Test on Mask RCNN model:
 ### learning rate
 Remember to set lr in config file according to your <u>**own GPU_NUM**</u> !!!!(eg.1/8 of default lr for 1 GPU)
 
-## Future work</br>
-Mmdetection performs better than many classical implementions , it's really a excellent work , can be called as ‘Chinese Detectron’ :p . I will update this project with annotations for more details in the future, letting more people make a good use of this great work.You can continue to foucus on this repo.</br>
-BTW , this repo is just used for better comprehension , if you ask for better performance or latest paper implementions ,please keep eyes on [mmdetection](https://github.com/open-mmlab/mmdetection)</br>
+
 
