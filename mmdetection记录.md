@@ -201,8 +201,9 @@ workflow = [('train', 1)]
 
 ```
 
+注意的是，模型参数中的各个关键字和模型的初始化关键字是对应的，例如FasterRCNNHBBOBB模型，在cfg中有bbox_roi_extractor和rbbox_roi_extractor，那么detector的构造函数也有这两个关键字，这是mmcv的config解析结果。
 
-## anchor setting
+### anchor setting
 
 head中的anchor设置参数为：
 
@@ -228,6 +229,16 @@ anchor_strides=[8, 16, 32, 64, 128],
 ```
 
 很明白了吧，scales_per_octave的个数代表`2^0`开始的多少个尺度，等分1作为幂指数；anchor_ratios和scales_per_octave其实推算一下不难得出：$h= s\sqrt{r} , w= s/ \sqrt{r} $，其中s就是octave_base_scale，r就是ratio了，wh顺序无所谓，反正对称的。
+
+### box head
+
+可以看到box head设置有的是rbbox_head，有的是bbox_head，这部分对应到detector的base_new
+
+可以看出，通过这个关键字判定回归结果是正框还是斜框从而进行对应的设置。
+
+### use_sigmoid
+
+使用与否的区别是，使用sigmoid意味着没有额外的背景预测，分类器输出通道数就是类别数（注意cfg里面的类别数是包含背景的）。这部分在anchor_head_rbbox中init时有定义。但是计算loss时，这里由于进行cuda加速比较简单，输入的cls_score通道数为真实类别，而label仍然为一维向量，0是背景，不用转化为多通道的target，这部分在cuda实现的。
 
 ## mmdet
 
@@ -256,6 +267,14 @@ pos_iou_thr和neg_iou_thr分别是正负样本阈值，min_pos_iou是maxiou补�
 assign( )是调用接口，bboxes为anchor：(num_anchors, 4)，gt_bboxes：(num_gt, ,4)，gt_labels：(num_gt)。计算出iou后传入assign_wrt_overlaps( )实现; 
 
 ##### samplers
+
+首先bbox下有个assign_sampling文件，其中assign_and_sample函数可以看出，很多时候assign和sampling是一起的。具体而言，单阶段检测器不用sampling（dense head采用loss加权的soft采样方式如GHM，focal loss），只需要assigner；而两阶段的同时要assign和sample会用到assign_and_sample函数；
+
+两者功能区别是，assign一般是根据IoU匹配出正负样本进行区分；而这些样本不全送进去训练，所以需要sampling一些（单阶段全要）；
+
+具体怎么操作？首先入口在anchor_target_rbbox文件，落实到单张图像上为anchor_target_rbbox_single函数，会根据sampling的flag选择单阶段还是两阶段，进行assign和sample；此时传入的是不区分feature level的所有anhcor和pred结果。然后根据不同的sampler操作就行，注意一下继承关系，例如使用RandomRbboxSampler，在外部调用的是`.sample()`方法，但是RandomRbboxSampler是没有的，向上继承父类RbboxBaseSampler的sample( )方法，在其中有通过pos_inds = self.pos_sampler._sample_pos回到当前子类，调用子类定义的新\_sample_pos方法自定义采样方式。
+
+还需注意一点的是，两阶段检测器的batch并行问题，例如bs为4，会先进行四个RPN的sampler，再到rcnn的sampler，因为这是一个batch是显然的。
 
 ### model
 #### anchor_heads
@@ -330,6 +349,15 @@ indice = np.concatenate([indice, np.random.choice(indice, num_extra)])
 python setup.py develop
 ```
 
+##### 
+
+##### [Docker] 错误之ImportError: libGL.so.1: cannot open shared object file: No such file or directory
+
+```
+apt update
+apt install libgl1-mesa-glx
+```
+
 ##### cuda相关的问题
 
 类似这种：
@@ -343,9 +371,9 @@ python setup.py develop
 ```
 export CUDA_HOME=/usr/local/cuda-10.0    # 其中cuda版本根据自己的进行调整
 source ~/.bashrc
+rm -rf build
+python setup.py build develop
 ```
-
-
 
 ---
 
@@ -359,9 +387,10 @@ pip install mmcv==0.4.3
 
 ##### undefined symbol: _ZN6caffe26detail37_typeMetaDataInstance_preallocated_32E
 
-这是个很神奇的问题，网上找了很久没有正确答案，很多人重装偶尔可行，有的人就是不行，只好弃掉自己的代码，但真相居然是：在import cuda函数之前先import torch即可！
+* 情况一：import顺序问题：在import cuda函数之前先import torch即可！
+* 情况二：删掉build文件夹重新编译
 
-所以写程序注意：1. 不懂就别瞎改 2. 多用git记录代码版本
 
-##### 其他问题
+
+
 
